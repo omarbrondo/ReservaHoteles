@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hotel Reserva</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Sistema de Reservas del Hotel</h1>
+    <form action="/crearReserva" method="post">
+        <input type="text" name="nombre" placeholder="Nombre" required><br/>
+        <input type="text" name="apellido" placeholder="Apellido" required><br/>
+        <label>Fecha de inicio:</label>
+        <input type="date" name="fecha_inicio" required><br/>
+        <label>Fecha de fin:</label>
+        <input type="date" name="fecha_fin" required><br/>
+        <label>Selección de Habitación:</label>
+        <select name="habitacion" id="selectHabitacion" required>
+            <option value="">-- Seleccione una Habitación --</option>
+        </select><br/>
+        <button type="submit">Crear Reserva</button>
+    </form>
+
+    <script>
+        // Al cargar la página, hacemos una petición para obtener las habitaciones libres y llenamos el select.
+        fetch('/habitaciones')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById("selectHabitacion");
+                data.forEach(hab => {
+                    let option = document.createElement("option");
+                    option.value = hab.id;
+                    option.text = hab.nombreHabitacion;
+                    select.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+</body>
+</html>
