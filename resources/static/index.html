@@ -7,7 +7,10 @@
 </head>
 <body>
     <h1>Sistema de Reservas del Hotel</h1>
+
+    <!-- Tu formulario existente va aquí -->
     <form action="/crearReserva" method="post">
+        <!-- campos del formulario -->
         <input type="text" name="nombre" placeholder="Nombre" required><br/>
         <input type="text" name="apellido" placeholder="Apellido" required><br/>
         <label>Fecha de inicio:</label>
@@ -21,8 +24,27 @@
         <button type="submit">Crear Reserva</button>
     </form>
 
+    <!-- Tabla para mostrar las reservas -->
+    <h2>Reservas Actuales</h2>
+    <table id="tablaReservas">
+        <thead>
+            <tr>
+                <th>ID Reserva</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Habitación</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Las filas se agregarán aquí dinámicamente -->
+        </tbody>
+    </table>
+
     <script>
-        // Al cargar la página, hacemos una petición para obtener las habitaciones libres y llenamos el select.
+        // Función para llenar el select de habitaciones (ya tienes este código, por ejemplo)
         fetch('/habitaciones')
             .then(response => response.json())
             .then(data => {
@@ -35,6 +57,37 @@
                 });
             })
             .catch(error => console.error('Error:', error));
+
+        // Función para cargar la tabla de reservas
+        function cargarTablaReservas() {
+            fetch('/reservas')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('tablaReservas').getElementsByTagName('tbody')[0];
+                    tbody.innerHTML = ''; // Vaciar la tabla antes de llenarla
+                    data.forEach(item => {
+                        let row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.reservaId}</td>
+                            <td>${item.nombre}</td>
+                            <td>${item.apellido}</td>
+                            <td>${item.fechaInicio}</td>
+                            <td>${item.fechaFin}</td>
+                            <td>${item.nombreHabitacion ? item.nombreHabitacion : 'Sin asignar'}</td>
+                            <td>${item.estado ? item.estado : 'Sin asignar'}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        
+        // Cargar la tabla al iniciar la página y cada cierto tiempo (opcional)
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarTablaReservas();
+            // Si deseas actualizar automáticamente cada cierto tiempo:
+            // setInterval(cargarTablaReservas, 5000); // Actualiza cada 5 segundos
+        });
     </script>
 </body>
 </html>
