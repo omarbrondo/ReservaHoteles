@@ -45,4 +45,20 @@ public class HabitacionRepository {
             e.printStackTrace();
         }
     }
+    
+    
+    public void checkoutHabitacion(int habitacionId) {
+        String sql = "UPDATE habitacion SET reserva_id = NULL, estado = 'libre' WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, habitacionId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    
+    
+    
 }

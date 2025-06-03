@@ -8,9 +8,8 @@
 <body>
     <h1>Sistema de Reservas del Hotel</h1>
 
-    <!-- Tu formulario existente va aquí -->
+    <!-- Formulario para crear reserva -->
     <form action="/crearReserva" method="post">
-        <!-- campos del formulario -->
         <input type="text" name="nombre" placeholder="Nombre" required><br/>
         <input type="text" name="apellido" placeholder="Apellido" required><br/>
         <label>Fecha de inicio:</label>
@@ -36,57 +35,80 @@
                 <th>Fecha Fin</th>
                 <th>Habitación</th>
                 <th>Estado</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Las filas se agregarán aquí dinámicamente -->
+            <!-- Las filas se agregarán dinámicamente -->
         </tbody>
     </table>
 
     <script>
-        // Función para llenar el select de habitaciones (ya tienes este código, por ejemplo)
-        fetch('/habitaciones')
-            .then(response => response.json())
-            .then(data => {
-                const select = document.getElementById("selectHabitacion");
-                data.forEach(hab => {
-                    let option = document.createElement("option");
-                    option.value = hab.id;
-                    option.text = hab.nombreHabitacion;
-                    select.appendChild(option);
-                });
-            })
-            .catch(error => console.error('Error:', error));
+        function hacerCheckout(reservaId, habitacionId) {
+          if (confirm("¿Desea liberar la habitación?")) {
+              fetch('/checkout', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded'
+                  },
+                  body: 'habitacionId=' + habitacionId
+              })
+              .then(response => {
+                  if(response.redirected){
+                      cargarTablaReservas();
+                  } else {
+                      // También podemos actualizar la tabla sin redirigir
+                      cargarTablaReservas();
+                  }
+              })
+              .catch(error => console.error('Error Checkout:', error));
+          }
+        }
 
-        // Función para cargar la tabla de reservas
+        // Cargar el select de habitaciones para crear reserva
+        fetch('/habitaciones')
+          .then(response => response.json())
+          .then(data => {
+              const select = document.getElementById("selectHabitacion");
+              data.forEach(hab => {
+                  let option = document.createElement("option");
+                  option.value = hab.id;
+                  option.text = hab.nombreHabitacion;
+                  select.appendChild(option);
+              });
+          })
+          .catch(error => console.error('Error:', error));
+
+        // Cargar tabla de reservas dinámicamente
         function cargarTablaReservas() {
             fetch('/reservas')
-                .then(response => response.json())
-                .then(data => {
-                    const tbody = document.getElementById('tablaReservas').getElementsByTagName('tbody')[0];
-                    tbody.innerHTML = ''; // Vaciar la tabla antes de llenarla
-                    data.forEach(item => {
-                        let row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${item.reservaId}</td>
-                            <td>${item.nombre}</td>
-                            <td>${item.apellido}</td>
-                            <td>${item.fechaInicio}</td>
-                            <td>${item.fechaFin}</td>
-                            <td>${item.nombreHabitacion ? item.nombreHabitacion : 'Sin asignar'}</td>
-                            <td>${item.estado ? item.estado : 'Sin asignar'}</td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                })
-                .catch(error => console.error('Error:', error));
+              .then(response => response.json())
+              .then(data => {
+                  const tbody = document.getElementById('tablaReservas').getElementsByTagName('tbody')[0];
+                  tbody.innerHTML = ''; // Vacía la tabla
+                  data.forEach(item => {
+                      let row = document.createElement('tr');
+                      row.innerHTML = `
+                          <td>${item.reservaId}</td>
+                          <td>${item.nombre}</td>
+                          <td>${item.apellido}</td>
+                          <td>${item.fechaInicio}</td>
+                          <td>${item.fechaFin}</td>
+                          <td>${item.nombreHabitacion ? item.nombreHabitacion : 'Sin asignar'}</td>
+                          <td>${item.estado ? item.estado : 'Sin asignar'}</td>
+                          <td>
+                              <button onclick="hacerCheckout(${item.reservaId}, ${item.habitacionId})">Checkout</button>
+                          </td>
+                      `;
+                      tbody.appendChild(row);
+                  });
+              })
+              .catch(error => console.error('Error:', error));
         }
-        
-        // Cargar la tabla al iniciar la página y cada cierto tiempo (opcional)
+
         document.addEventListener('DOMContentLoaded', () => {
             cargarTablaReservas();
-            // Si deseas actualizar automáticamente cada cierto tiempo:
-            // setInterval(cargarTablaReservas, 5000); // Actualiza cada 5 segundos
+            // Opcional: setInterval(cargarTablaReservas, 5000);
         });
     </script>
 </body>
